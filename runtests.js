@@ -6,10 +6,10 @@ deal in the Software without restriction, including without limitation the
 rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
 sell copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 ***********************************************/
 
-var sys = require("sys");
+var util = require("util");
 var fs = require("fs");
 var htmlparser = require("./lib/htmlparser");
 
@@ -30,46 +30,46 @@ var testFiles = fs.readdirSync(testFolder);
 var testCount = 0;
 var failedCount = 0;
 for (var i in testFiles) {
-	testCount++;
-	var fileParts = testFiles[i].split(".");
-	fileParts.pop();
-	var moduleName = fileParts.join(".");
-	var test = require(testFolder + "/" + moduleName);
-	var handlerCallback = function handlerCallback (error) {
-		if (error)
-			sys.puts("Handler error: " + error);
-	}
-	var handler = (test.type == "rss") ?
-		new htmlparser.RssHandler(handlerCallback, test.options.handler)
-		:
-		new htmlparser.DefaultHandler(handlerCallback, test.options.handler)
-		;
-	var parser = new htmlparser.Parser(handler, test.options.parser);
-	parser.parseComplete(test.html);
-	var resultComplete = handler.dom;
-	var chunkPos = 0;
-	parser.reset();
-	while (chunkPos < test.html.length) {
-		parser.parseChunk(test.html.substring(chunkPos, chunkPos + chunkSize));
-		chunkPos += chunkSize;
-	}
-	parser.done();
-	var resultChunk = handler.dom;
-	var testResult =
-		sys.inspect(resultComplete, false, null) === sys.inspect(test.expected, false, null)
-		&&
-		sys.inspect(resultChunk, false, null) === sys.inspect(test.expected, false, null)
-		;
-	sys.puts("[" + test.name + "\]: " + (testResult ? "passed" : "FAILED"));
-	if (!testResult) {
-		failedCount++;
-		sys.puts("== Complete ==");
-		sys.puts(sys.inspect(resultComplete, false, null));
-		sys.puts("== Chunked ==");
-		sys.puts(sys.inspect(resultChunk, false, null));
-		sys.puts("== Expected ==");
-		sys.puts(sys.inspect(test.expected, false, null));
-	}
+        testCount++;
+        var fileParts = testFiles[i].split(".");
+        fileParts.pop();
+        var moduleName = fileParts.join(".");
+        var test = require(testFolder + "/" + moduleName);
+        var handlerCallback = function handlerCallback (error) {
+                if (error)
+                        util.puts("Handler error: " + error);
+        }
+        var handler = (test.type == "rss") ?
+                new htmlparser.RssHandler(handlerCallback, test.options.handler)
+                :
+                new htmlparser.DefaultHandler(handlerCallback, test.options.handler)
+                ;
+        var parser = new htmlparser.Parser(handler, test.options.parser);
+        parser.parseComplete(test.html);
+        var resultComplete = handler.dom;
+        var chunkPos = 0;
+        parser.reset();
+        while (chunkPos < test.html.length) {
+                parser.parseChunk(test.html.substring(chunkPos, chunkPos + chunkSize));
+                chunkPos += chunkSize;
+        }
+        parser.done();
+        var resultChunk = handler.dom;
+        var testResult =
+                util.inspect(resultComplete, false, null) === util.inspect(test.expected, false, null)
+                &&
+                util.inspect(resultChunk, false, null) === util.inspect(test.expected, false, null)
+                ;
+        util.puts("[" + test.name + "\]: " + (testResult ? "passed" : "FAILED"));
+        if (!testResult) {
+                failedCount++;
+                util.puts("== Complete ==");
+                util.puts(util.inspect(resultComplete, false, null));
+                util.puts("== Chunked ==");
+                util.puts(util.inspect(resultChunk, false, null));
+                util.puts("== Expected ==");
+                util.puts(util.inspect(test.expected, false, null));
+        }
 }
-sys.puts("Total tests: " + testCount);
-sys.puts("Failed tests: " + failedCount);
+util.puts("Total tests: " + testCount);
+util.puts("Failed tests: " + failedCount);
